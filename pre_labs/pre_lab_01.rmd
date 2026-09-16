@@ -95,7 +95,7 @@ umd_courses <- read_rds("umd_courses.rds")
 
 Once it loads, look at the environment window at right in RStudio for umd_courses It's next to a small blue circle with a white arrow in it. To the right of that, look at how many "obs" the dataset has ("obs" is short for observation, which is another way of saying rows or records). Look at how many variables it has (another way of saying columns or fields). Write the number of observations and variables below.
 
-**Answer: 79,366 observations (rows) and 9 variables (columns).**
+**Answer**
 
 ### Task 6: Glimpse data
 
@@ -138,7 +138,7 @@ umd_courses |>
   )
 ```
 
-Describe what you think each line of this code is doing below, based on the result: The first line of code is telling us what data set to pull information from, so we want to organize the information within the "umd_courses" spreadsheet. The second line of code is grouping the course data based on when the classes are offered within the school year. The numbers are showing the year and month of when the courses are available. The next row of code is asking to summarize the data set into a smaller digestible table. The final line of code is finding the number of open seats in each course in that specific term.
+Describe what you think each line of this code is doing below, based on the result:
 
 **Answer: 9 columns and 79,366 rows**
 
@@ -155,7 +155,7 @@ umd_courses |>
   arrange(desc(count_classes))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:** We added the instruction (arrange(desc(count classes)) and the data was then organized by the largest value to the smallest value in the number of open seats.
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:** We added the instruction (arrange(desc(count classes)) and the data was then organized
 
 ### Task 11: Grouping by multiple columns
 
@@ -172,7 +172,7 @@ umd_courses |>
 
 Compared to the previous codeblock, how did the output change and what in the code changed it?
 
-**Answer:** Compared to the previous codeblock, the output now includes the name of the department so that we can identify how many classes is each department offering for that term. The final piece of code arrange (term, department) is what caused the change.
+**Answer**
 
 ### Task 12: Other summary functions
 
@@ -188,7 +188,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? **Answer:** This code is now showing the total number of seats available in each class and groups them by the size of the value from largest to smallest.
+Compared to the previous codeblock, what has changed and how did that affect the result? **Answer**
 
 ### Task 13: different kinds of summarizations
 
@@ -206,7 +206,7 @@ umd_courses |>
   arrange(desc(total_seats))
 ```
 
-Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer:** The code is still showing the number of available seats in the class sections descending from highest value to the lowest value. Now, the codeblock is also giving us the the mean and median to tell us the average amount of available seats in each class. The top terms are all classes offered in the fall semester because the registration month is 08.
+Compared to the previous codeblock, what has changed and how did that affect the result? What do the top terms have in common? **Answer**
 
 ### Task 14: more aggregations
 
@@ -228,7 +228,7 @@ umd_courses |>
 
 Compared to the previous codeblock, what has changed and how did that affect the result? How is the data sorted?
 
-**Answer:** The data is now organized by classes which have to highest number of available seats to the lowest number of available seats grouped by each term.
+**Answer**
 
 ### Task 12: Questions
 
@@ -236,8 +236,8 @@ No code here; I want you to provide three questions that this data suggests to y
 
 **Answer**
 
-1.  Are there more students who sign up for a specific class in the fall semester versus the spring semester?
+1.  
 
-2.  Can we find out how many of the seats were filled for each class and how many seats may have remained open?
+2.  
 
-3.  Based on the amount of seats that were filled in each class, can we determine which of the departments had the highest total enrollment?
+3.  
