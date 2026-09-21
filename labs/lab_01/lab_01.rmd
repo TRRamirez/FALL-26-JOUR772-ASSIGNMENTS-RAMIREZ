@@ -1,0 +1,95 @@
+---
+title: "lab_01"
+author: "Derek Willis"
+date: "2025-01-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Turn off scientific notation
+options(scipen=999)
+```
+
+## About this lab
+
+To complete this lab, you need to: \* run existing code as directed (look for **Task**). \* modify existing code as directed (look for **Task**). \* write code in empty codeblocks provided to answer questions included (look for **Q**). \* write out the answer in the form of a complete sentence in the space given (look for **A**). When you are finished, commit changes and push to your personal GitHub repo, then submit the URL to this document on ELMS.
+
+Remember to add any new verbs or concepts to your class reference notebook!
+
+## Load libraries and establish settings
+
+**Task** Run the codeblock below to load the Tidyverse. To run the codeblock, hit the little green play button in the upper right corner of the gray area (the codeblock) below.
+
+```{r}
+# Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
+# install.packages('tidyverse')
+library(tidyverse)
+```
+
+## Load Data
+
+We're going to load the UMD courses data.
+
+**Task** Run the codeblock below to load the data, which is contained in an RDS file.
+
+```{r}
+umd_courses <- read_rds("lab_01.rds")
+```
+
+## Answer questions
+
+**Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you?
+
+**A1** Computer, Math and Natural Sciences has the highest mean (average) number of seats for its classes. The mean number of seats in the Computer, Math and Natural Sciences department is 440. I was surprised and interested to see that Computer Science and Mathematics are designated as different departments and have much lower average means considering the department with the highest mean was "Computer, Math and Natural Sciences."
+
+```{r}
+umd_courses |>
+  group_by(department) |>
+  summarise(
+    mean_seats = mean(seats)
+  ) |>
+  arrange(desc(mean_seats))
+  
+```
+
+**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first.
+
+**A2**
+
+```{r}
+umd_courses |>
+  group_by(id) |>
+  summarise(count_term = n()
+  ) |>
+  arrange(desc(count_term))
+```
+
+**Q3** Count the number of courses for each instructor and department. Which instructor has taught the most?
+
+**A3** Keith Yearwood is the professor who has taught the most classes with 79.
+
+```{r}
+umd_courses|>
+  group_by(department, instructors)|>
+  summarize(count_term = n()
+  ) |> 
+  arrange(desc(count_term))
+```
+
+**Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why?
+
+**A4** I am not sure if there is a different way to enter the code so that only the data with an instructor value is shown, but it would be easier to have found this answer if there were no so many instructors categorized as N/A. If this data set was fully cleaned and organized in a different way, it may be easier for us to find the results more quickly and the data would be presented more concisely.
+
+**Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting?
+
+**A5** The question I would like to answer is: Based on the amount of seats that were filled in each class, can we determine which of the departments had the highest total enrollment? I tried to code and to group by department and the number of seats and arrange the data in descending order however I do not think these results accurately answer my question. Based on the data we have in the dataset, we may not be able to find out how many seats were filled in each of the classes versus how many remained empty. However, if we did have that data, I would like to be able to compare the number of empty seats across courses in each department, be able to compare those values and then determine which departments had the highest or lowest percentage of enrollment compared to the number of seats available in ther classes.
+
+```{r}
+umd_courses |>
+  group_by(department, seats) |>
+  summarize(count_term = n()
+  ) |>
+  arrange(desc(count_term))
+  
+```
