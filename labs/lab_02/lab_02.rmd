@@ -1,0 +1,112 @@
+---
+title: "lab_02"
+author: "Derek Willis"
+date: "2025-01-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
+# install.packages('tidyverse')
+library(tidyverse)
+library(lubridate)
+```
+
+## Load Data
+
+Let's keep working with the UMD courses and Maryland campaign expense data we used in the pre_lab.
+
+```{r}
+umd_courses <- read_rds("data/umd_courses.rds")
+maryland_expenses <- read_csv("data/maryland_expenses.csv")
+```
+
+## Answer questions
+
+**Q1.** How many departments have offered the courses with "Climate" in the title and at least one seat? Which department has offered the most?
+
+**A1.** 32 departments have offered a course with 'climate' in the title. Atmospheric and Oceanic Science is the department that has offered the most courses with 93 total courses offered mentioning 'climate'.
+
+```{r}
+climate_courses <- umd_courses|>
+  group_by(department)|>
+  filter(str_detect(title, "Climate") & seats >= 1)|>
+summarize(climate = n())|>
+  arrange(desc(climate))
+```
+
+**Q2.** Of the departments listed in A1, which one is the most interesting to you, and why?
+
+**A2.** The department most interesting to me is the 'Finance' department which has offered 4 classes with 'climate' mentioned in the title. This is interesting to me because I would not have guessed that finance courses had anything to do with climate in their curriculum. These two are topics which I wouldn't assume had much of an intersection and I would be curious to know what those specific course titles were and how climate was involved in the curriculum.
+
+**Q3** Which departments offered the most courses in the Fall 2024 term? And which departments in that term have at least one syllabus posted? Answer both of those questions and then compare the top five departments - how are they different?
+
+**A3.** Business and Management offered the most courses in the Fall 2024 term offering a total of 106 courses. There is a total of 134 different departments that offered courses with at least one syllabus posted. The top five departments were 'Business and Management', 'Economics', the 'School of Music', 'Information Studies' and 'Engineering Professional Masters'. Among these five departments, it stood out to me that the top department, 'Business and Management' had almost double the amount of offered courses in one semester than the second highest department 'Economics'. This outlier could be used to interpret which department or subject matters as a whole are the most popular at the University of Maryland, and could point to bigger trends in the development of certain industries over others.
+
+```{r}
+Fall_24 <- umd_courses|>
+  group_by(department)|>
+  filter(term == 202408 & (syllabus_count >= 1))|>
+  summarize(course_count = n())|>
+  arrange(desc(course_count))
+```
+
+**Q4.** Using the Maryland campaign expenses data, change the datatype of the expenditure_date column so that it is a date and not a chr, saving the result as a new dataframe. Then create a new column for the month based on expenditure_date. Then write code that shows total amount spent each month by Wes Moore's committee (you'll need to search the data to find the exact name, and we're not looking in payee_name). Write a sentence describing the pattern of spending over time.
+
+**A4.** The pattern of spending over time is somewhat irregular but there are a few interesting things to note. The first month of recorded committee spending, May of 2021 is significantly lower than all of the other recorded months with just \$6,000 spent. This is likely because the campaign was new and committee was just beginning its work. Overall, the spending does trend upwards over time though there are a few months in which the spending slightly decreases. The largest amount of spending occurred in October of 2022 with a total of \$3,119,129 spent.
+
+```{r}
+campaign_expenses <- maryland_expenses|> 
+  mutate(expenditure_date = mdy(expenditure_date))|>
+  filter(str_detect(committee_name, "Wes For"))|>
+  mutate(month = floor_date(expenditure_date,"month"))|>
+  group_by(month)|>
+  summarize(total_amount = sum(amount))|>
+  arrange(month)
+```
+
+**Q5.** Using case_when(), create a column in the Maryland expenses data called `spending_location` indicating whether each record spent money in Maryland or outside Maryland. For records that are in Maryland, make the new column's value "In-state" and for all others, make it "Out of state". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe).
+
+**A5.** By comparing the origins of donations to Wes Moore's campaign, it's estimated that \$77,723,146 of donations came from 'in-state' while \$33,164,994 came from 'out-of-state'. These results are not surprising given that you would expect the majority of donations for any campaign to originate from within the jurisdiction that a candidate is running to represent. In state and local elections, it is unlikely that many from other states or places become involved enough to donate to a campaign. It also is not surprising that a large amount of money still came from out-of-state donors due to the fact that Wes Moore has more of a national presence than other politicians running for state office. The proximity of Maryland to Washington, D.C. also means that whoever the Maryland governor is, they will likely gain additional attention due to the coordination and shared interests with the federal government in the area.
+
+```{r}
+maryland_expenses|>
+  mutate(
+    spending_location = case_when(
+        str_detect(address, " Maryland ") ~ "In-state",
+        str_detect(address, " California ") ~ "Out of state",
+        str_detect(address, " Washington ") ~ "Out of state",
+        str_detect(address, " Louisiana ") ~ "Out of state",
+        str_detect(address, " Florida ") ~ "Out of state",
+        str_detect(address, " North Carolina ") ~ "Out of state",
+        str_detect(address, " Massachusetts ") ~ "Out of state",
+        str_detect(address, " West Virginia ") ~ "Out of state",
+        str_detect(address, " Virginia ") ~ "Out of state",
+        .default = NA
+    )
+)|> 
+group_by(spending_location)|>
+  summarize(total_amount = sum(amount))|>  
+  arrange(desc(total_amount))
+```
+
+**Q6.** Choose your own adventure: using either the UMD courses or campaign expenses data, ask and answer a question that is different than the previous ones. You can use one of the ones you provided in the pre_lab.
+
+**A6.** I wanted to explore the number of departments in a specific term that offered classes with 10 or more sections of a class. I created a new dataset only for the fall semester of 2019 and I filtered by both the term and the number of sections offered. I found that there were 41 departments that offered at least one class with 10 or more sections in the term of fall 2019. The departments which offered the most courses with 10 or more sections were Chemistry and Mathematics. Both departments offered 10 different courses each with 10 or more sections.
+
+```{r}
+Fall19 <- umd_courses|>
+  group_by(department)|>
+  filter(term == 201908 & (sections >= 10))|>
+  summarize(course_count = n())|>
+  arrange(desc(course_count)) 
+```
