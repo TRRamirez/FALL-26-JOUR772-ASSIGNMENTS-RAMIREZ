@@ -1,0 +1,194 @@
+---
+title: "week7_recap"
+author: "Daniel Trielli"
+date: "2023-10-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Turn off scientific notation
+options(scipen=999)
+```
+
+## Loading the packages
+
+Run the codeblock below to load the packages we will need for this recap
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+```
+
+## Load Data
+
+Run the codeblock below to load the data.
+
+```{r}
+earthquakes <- read_csv('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.csv')
+
+#Setting time column as datetime
+earthquakes <- earthquakes |> mutate(time = as_datetime(time))
+```
+
+#### Answer the questions below
+
+Most questions have a code block and a space for an answer below. Write the code you think is necessary and, in the answer space, write out what you did and what was the result.
+
+------------------------------------------------------------------------
+
+#### **Q1:** Do you notice anything different with this read_csv()? Particularly in the file name?
+
+**A1:** Yes, when looking at the csv file it begins with 'https' which indicates that the data file is originating from a webpage.
+
+------------------------------------------------------------------------
+
+#### **Q2:** How many records there are there in this dataset? What do they mean and what useful information we can gather from it, looking at the columns?
+
+**A2:** At the time of downloading, there are 10,175 records in the dataset. These records indicate earthquakes detected by the U.S. Geological Survey. From the records in this dataset, we can find multiple variables such as location, severity and the times of each specified earthquake.
+
+------------------------------------------------------------------------
+
+#### **Q3:** How do I reorganize this list to see the ones that are the deepest first? What is the depth that shows up for the deepest one, and its magnitude?
+
+```{r}
+earthquakes|>
+  arrange(desc(depth))
+```
+
+**A3:** In order to reorganize this dataset to see what the greatest recorded depths first, we would need to arrange the depth column in descending order. This will reorganize the dataset so that the largest value in the 'depth' column will appear at the top.
+
+------------------------------------------------------------------------
+
+#### **Q4:** I just want to see the earthquakes with a magnitude larger than 6. How do I do that? And how many are there that fit this criteria?
+
+```{r}
+bigmagquakes <- earthquakes|> 
+  filter(mag >=6)
+```
+
+**A4:** In order to see the earthquakes with a magnitude larger than 6, I decided to create a new datatable so that the information is easier to read. I am calling this table 'bigmagquakes' and I filtered data from the full dataset to find earthquakes with a magnitude greater than or equal to 6.
+
+------------------------------------------------------------------------
+
+#### **Q5** What about if I want to see earthquakes that have both a magnitude larger than 6 and a depth smaller than 20? How many are there in the data set that fit [both]{.underline} these criteria?
+
+```{r}
+magdepthquakes <- earthquakes|>
+  filter(mag >6 & depth <20)
+```
+
+**A5:** To see two different variables within the dataset at one time, we can filter for more than one thing. In this case, we are filtering for both a magnitude of greater than 6 and a depth smaller than 20. I created an additional datatable to see just these observations so that it is easier to read. I titled this new datatable 'magdepthquakes' and there are only 7 variables that fit both of these criteria.
+
+------------------------------------------------------------------------
+
+#### **Q6** What about if I want to see earthquakes that either have a magnitude larger than 6 and a depth smaller than 20? How many are there in the data set that fit [either]{.underline} these criteria?
+
+find the function where you can filter by two things using the and function
+
+```{r}
+maganddepthquakes <- earthquakes|>
+filter(mag >6 | depth <20)
+```
+
+**A6:** To see two different variables that are not dependent on one another, we use the OR function instead of the AND function. To do this, we still include both different variables but we use the \| symbol instead.
+
+------------------------------------------------------------------------
+
+#### **Q7:** I'm interested in finding earthquakes that took place in Alaska. Which column should I look at? How do I use it to find all the earthquakes in Alaska? How many earthquakes took place there?
+
+```{r}
+Alaskaquakes <- earthquakes|>
+  filter(
+    str_detect(place,"Alaska"))
+```
+
+**A7:** To see only the earthquakes that took place in Alaska, we must look at the column listed 'place' where the coordinates of each earthquake are generalized to a specific town or city within a state. To do this, I created a new datatable titled 'Alaskaquakes' so that the information is easier to read. We also need to filter within the 'place' column and only pull out the state of Alaska. Once we do this, there is a total of 3,428 observations in the datatable of earthquakes recorded in the state of Alaska.
+
+------------------------------------------------------------------------
+
+#### **Q8** I notice that there is a column called 'type', that seems to have different kinds of tremors. What is the best way to find what are all the possible types of tremors, and counting how many of each there are in this data set? What are the first two most common types of tremors in this data set?
+
+```{r}
+earthquakes|>
+  group_by(type)|>
+  summarise(tremor_type = n())|>
+  arrange(desc(tremor_type))
+```
+
+**A8:** The best way to find the different tremor types within this dataset is to group by the type column. In order to get the count of each type of tremor is to create a new column which I titled 'tremor_type'. Last, we need to see the two most common and to do that I arranged in descending order which will show the most frequent tremor types at the top. The two most common tremor types are earthquakes and quarry blasts.
+
+------------------------------------------------------------------------
+
+#### **Q9** How do I calculate the average depth of each type of tremor? What is the average depth of the earthquake type in this data set? Is there anything that seems unusual or surprising in this finding?
+
+```{r}
+earthquakes|>
+  group_by(type)|>
+  summarize(avg_depth = mean(depth))|>
+  arrange(desc (avg_depth))
+```
+
+**A9:** The average depth of the earthquakes recorded in this dataset is 23.5 km. I found it unusual that the average depth of explosions and quarry blasts had a negative average. My guess is that this could be because these events sometimes happen above ground thought they still register as tremors?
+
+------------------------------------------------------------------------
+
+#### **Q10** I'm interested, in the future, to see the hours in which earthquakes happen. How can I extract the hour from the time column?
+
+```{r}
+earthquakes <- earthquakes|>
+  mutate(hour_of_day = hour(time))
+
+
+earthquakes|>
+  group_by(hour_of_day)|>
+  count()|>
+  arrange(desc(n))
+```
+
+**A10:** To extract the hour from the 'time' column we must mutate the time column and have it count the hour in the day that each recorded earthquake occurred. Once we have this new column, we can then continue to group by the hour of the day, and arrange the count in descending order to see the hours of the day which had the most recorded events. The 8th hour of the day is when the most earthquakes were recorded.
+
+------------------------------------------------------------------------
+
+#### **Q11** I want to make a note of all the records in this data set that I consider serious. For my purposes, I'm thinking that all tremors that have a magnitude that is larger than 3 are serious. How do I automatically create a new column making that distinction?
+
+```{r}
+
+earthquakes <- earthquakes|>
+  mutate(serious_quakes = case_when(mag >3 ~ "serious",.default = "not serious"))
+```
+
+**A11:** To create a new column within the general earthquakes dataset we need to mutate. I titled the new column 'serious_quakes' and specified using case when that if a magnitude is over 3, it should be considered serious. Lastly, the default can be set to no serious as anything under 3 we are not interested in.
+
+------------------------------------------------------------------------
+
+#### **Q12** I have no idea how earthquakes work and I'm interested in seeing if there is a particular time of day in which serious earthquakes happen. How can I see that condensed in a table with all the hours in a day and all the serious earthquakes in each hour? What is the hour with fewer serious earthquakes and the one with the most serious earthquakes?
+
+```{r}
+earthquakes|>
+  filter(mag>3)|>
+  group_by(hour_of_day)|>
+  count()|>
+  arrange(n)
+```
+
+**A12**: To find the time of day that the 'serious' earthquakes are happening, we need to filter to only find the earthquakes with a magnitude of over 3, which was the criteria for deciding if an earthquake was serious. Then we have to arrange in descending order by the hour of day column we created earlier. The hour with the fewest serious earthquakes is hour 9 (or 9 a.m.) and the hour with the most serious earthquakes is hour 20 (or 8 p.m.)
+
+------------------------------------------------------------------------
+
+#### EXTRA Q What other questions are you interested in and how would you ask them in R?
+
+I am curious to see how many, if any earthquakes occurred at a depth of 150km. When I do this, there are 156 observations in the new datatable therefore at 156 earthquakes ocurred at a depth of at least 150km.
+
+```{r}
+deep_quakes <- earthquakes|>
+  filter(depth >= 150)
+```
+
+I want to be able to see if any of these recorded earthquakes occurred here in Maryland. When I did this, I got a new datatable with 0 observations in it, telling me none of the recorded earthquakes in this dataset of 10,175 ocurred in Maryland. I would be curious to group different states together and analyze the country as a whole by region. Based on this information already, I would imagine the majority of recorded earthquakes are happening along the west coast.
+
+```{r}
+md_quakes <- earthquakes|>
+  filter(str_detect(place,"Maryland"))
+```
