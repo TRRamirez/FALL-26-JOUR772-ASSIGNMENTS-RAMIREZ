@@ -104,7 +104,7 @@ Each row represents a recipient of state grant or loan, along with information a
 ```{r}
 md_grants_loans |> 
   group_by(`Fiscal Year`, Category) |> 
-  summarize(count = n()) |> 
+  summarize(total_amount = n()) |> 
   arrange(`Fiscal Year`)
 ```
 
