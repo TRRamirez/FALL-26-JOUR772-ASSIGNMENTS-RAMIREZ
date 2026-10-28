@@ -42,3 +42,4 @@ vignettes/*.pdf
 .DS_Store
 *.DS_Store
 *.rds
+major_assignments/reverse_engineering/data/private-enrollment-by-grade.csv
