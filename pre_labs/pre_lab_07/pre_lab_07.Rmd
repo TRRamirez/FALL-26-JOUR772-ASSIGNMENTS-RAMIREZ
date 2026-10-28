@@ -242,4 +242,4 @@ md_high_schools_with_acs |>
 
 **Task** What is another question you could ask of this data?
 
-**Answer** What is the zipcode with the highest average income AND the lowest percentage of students enrolling directly in college after graduation? Would that even be possible to look at, and what would it tell us?
+**Answer** What is the zipcode with the highest average income AND the lowest percentage of students enrolling directly in college after graduation? Would that even be possible to look at, and what would it tell us? I also think it would be interesting to know if zipcodes with the highest average incomes are more likely to send their children to private schools which are not represented in this data.
