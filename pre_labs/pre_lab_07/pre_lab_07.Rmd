@@ -104,7 +104,7 @@ And now we calculate the percent change.
 
 **Task** Run the following codeblock to calculate the percentage change and put the state with the largest percentage growth below.
 
-**Answer** The state with the largest population growth from 20120 to 2020 is Utah. The state of Utah saw an 18.4% population increase during this time.
+**Answer** The state with the largest population growth from 2010 to 2020 is Utah. The state of Utah saw an 18.4% population increase during this time.
 
 ```{r}
 alldata |> mutate(change = ((Population2020-Population2010)/Population2010)*100) |> arrange(desc(change))

@@ -43,14 +43,18 @@ age_population <- read.csv("data/population-by-age.csv")|>
   
 public_enrollment <- read.csv("data/public-enrollment-by-grade.csv")|>
   clean_names()|>
-  rename(state_abrev = state)
+  rename(state_abrev = "st")|>
+  rename(public_enrollment = "enrollment")
 
 private_enrollment <- read.csv("data/private-enrollment-by-grade.csv")|>
   clean_names()|>
-  rename(state_abrev = state)
-
-#enrollment and 
-# Clean required data and prepare for analysis if needed. 
+  rename(state_abrev = "state")|>
+  rename(private_enrollment = "enrollment")
+  
+# New combined dataset
+school_story <- public_enrollment |>
+  full_join(private_enrollment, join_by(fips, sch_year, grade, state_abrev))|>
+  filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))
 ```
 
 ## Sentences to Engineer
@@ -59,15 +63,33 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-- **Sentence text**: [Paste in sentence to engineer here]
-- **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
+- **Sentence text**: “The population of school-age kids in the states we studied fell by about 183,000, according to census estimates.”
 
-```{r}
-# Put code to reverse engineer sentence here
+-  **Summary**: Our results confirmed the AP's claim stating that the population of school-age kids in the 22 states studied fell by about 183,000. We found this number by finding the difference between the provided age and population data from July 2020 to the age and population data we have found from 2021.
 
-# Display results of code below this codeblock
+  ```{r}
 
-```
+  age_2020_pop <- age_population|>
+    mutate(year = year(est_date), month = month(est_date))|>
+    filter(year == 2020 & month == 4)|>
+    filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
+    group_by(state)|>
+    summarise(total_pop_2020 = sum(population))
+
+
+  age_2021_pop <- age_population|>
+    mutate(year = year(est_date), month = month(est_date))|>
+    filter(year == 2021 & month == 7)|>
+    filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
+    group_by(state)|>
+    summarise(total_pop_2021 = sum(population))
+
+
+  combo_age_year <- age_2021_pop|>
+    left_join(age_2020_pop, join_by(state))|>
+    mutate(difference = total_pop_2020 - total_pop_2021)|>
+    summarise(total_difference = sum(difference))
+  ```
 
 ### Sentence 2
 
