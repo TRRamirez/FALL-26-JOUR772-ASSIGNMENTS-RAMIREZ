@@ -65,48 +65,51 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 - **Sentence text**: “The population of school-age kids in the states we studied fell by about 183,000, according to census estimates.”
 
--  **Summary**: Our results confirmed the AP's claim stating that the population of school-age kids in the 22 states studied fell by about 183,000. We found this number by finding the difference between the provided age and population data from July 2020 to the age and population data we have found from 2021.
+- **Summary**: Our results confirmed the AP's claim stating that the population of school-age kids in the 22 states studied fell by about 183,000. We found this number by finding the difference between the provided age and population data from July 2020 to the age and population data we have found from 2021.
 
-  ```{r}
+```{r}
 
-  age_2020_pop <- age_population|>
-    mutate(year = year(est_date), month = month(est_date))|>
-    filter(year == 2020 & month == 4)|>
-    filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
-    group_by(state)|>
-    summarise(total_pop_2020 = sum(population))
-
-
-  age_2021_pop <- age_population|>
-    mutate(year = year(est_date), month = month(est_date))|>
-    filter(year == 2021 & month == 7)|>
-    filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
-    group_by(state)|>
-    summarise(total_pop_2021 = sum(population))
+age_2020_pop <- age_population|>
+  mutate(year = year(est_date), month = month(est_date))|>
+  filter(year == 2020 & month == 4)|>
+  filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
+  group_by(state)|>
+  summarise(total_pop_2020 = sum(population))
 
 
-  combo_age_year <- age_2021_pop|>
-    left_join(age_2020_pop, join_by(state))|>
-    mutate(difference = total_pop_2020 - total_pop_2021)|>
-    summarise(total_difference = sum(difference))
-  ```
+age_2021_pop <- age_population|>
+  mutate(year = year(est_date), month = month(est_date))|>
+  filter(year == 2021 & month == 7)|>
+  filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
+  group_by(state)|>
+  summarise(total_pop_2021 = sum(population))
+
+
+combo_age_year <- age_2021_pop|>
+  left_join(age_2020_pop, join_by(state))|>
+  mutate(difference = total_pop_2020 - total_pop_2021)|>
+  summarise(total_difference = sum(difference))
+```
 
 ### Sentence 2
 
-- **Sentence text**: [Paste in sentence to engineer here]
+- **Sentence text**: "Those states saw private-school enrollment grow by over 100,000 students."
 - **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
-# Put code to reverse engineer sentence here
 
-# Display results of code below this codeblock
-
+private_enrollment_change <- private_enrollment |>
+filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12) )|>
+filter(str_detect(grade, "k_12_total")) |>
+filter(sch_year == "2019-2020"|sch_year == "2021-2022") |>
+group_by(sch_year) |>
+summarize(total_enrollment = sum(enrollment))
 ```
 
 ### Sentence 3
 
-- **Sentence text**: [Paste in sentence to engineer here]
-- **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
+- **Sentence text**: "An analysis by The Associated Press, Stanford University's Big Local News project and Stanford professor Thomas Dee found an estimated 230,000 students in 21 states whose absence could not be accounted for. These students didn't move out of state, and they didn't sign up for private school or home-school, according to publicly available data."
+- **Summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
