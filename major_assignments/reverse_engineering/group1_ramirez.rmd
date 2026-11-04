@@ -49,7 +49,8 @@ public_enrollment <- read.csv("data/public-enrollment-by-grade.csv")|>
 private_enrollment <- read.csv("data/private-enrollment-by-grade.csv")|>
   clean_names()|>
   rename(state_abrev = "state")|>
-  rename(private_enrollment = "enrollment")
+  rename(private_enrollment = "enrollment")|>
+mutate(private_enrollment = as.numeric(private_enrollment))
   
 # New combined dataset
 school_story <- public_enrollment |>
@@ -72,7 +73,7 @@ In this notebook, we are reverse engineering five sentences from the story.
 age_2020_pop <- age_population|>
   mutate(year = year(est_date), month = month(est_date))|>
   filter(year == 2020 & month == 4)|>
-  filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12))|>
   group_by(state)|>
   summarise(total_pop_2020 = sum(population))
 
@@ -80,7 +81,7 @@ age_2020_pop <- age_population|>
 age_2021_pop <- age_population|>
   mutate(year = year(est_date), month = month(est_date))|>
   filter(year == 2021 & month == 7)|>
-  filter(fips %in% c (6, 36, 22, 37, 58, 8, 13, 27, 55, 33, 25, 30, 10, 38, 11, 46, 45, 31,44, 47, 42, 12))|>
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12))|>
   group_by(state)|>
   summarise(total_pop_2021 = sum(population))
 
@@ -93,29 +94,31 @@ combo_age_year <- age_2021_pop|>
 
 ### Sentence 2
 
-- **Sentence text**: "Those states saw private-school enrollment grow by over 100,000 students."
-- **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
+- **Sentence text**: "Those states saw private-school enrollment grow by over 100,000 students.
 
-```{r}
+- **Summary**: Our results confirmed the AP's claim that private school enrollment in the 22 states studied grew by over 100,000 students. The AP article also states that private school enrollment grew by "about 103,000 students." We found this number by comparing total private school enrollment in the 22 states studied between the 2019-2020 and 2021-2022 school years. This gives us a difference of 102,847 which explains both sentences where this number is referenced in the AP's story.
 
-private_enrollment_change <- private_enrollment |>
-filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12) )|>
-filter(str_detect(grade, "k_12_total")) |>
-filter(sch_year == "2019-2020"|sch_year == "2021-2022") |>
-group_by(sch_year) |>
-summarize(total_enrollment = sum(enrollment))
-```
+  ```{r}
+  private_enrollment_change <- private_enrollment|>
+    filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12))|>
+    filter(str_detect(grade, "k_12_total"))|>
+    filter(sch_year=="2019-2020" | sch_year=="2021-2022")|>
+    group_by(sch_year)|>
+    summarise(total_enrollment = sum(private_enrollment))
+  ```
 
 ### Sentence 3
 
-- **Sentence text**: "An analysis by The Associated Press, Stanford University's Big Local News project and Stanford professor Thomas Dee found an estimated 230,000 students in 21 states whose absence could not be accounted for. These students didn't move out of state, and they didn't sign up for private school or home-school, according to publicly available data."
+- **Sentence text**: "In the 21 states where data was available, enrollment fell by about 700,000 students between the 2019-2020 and 2021-2022 school years."
 - **Summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
-# Put code to reverse engineer sentence here
-
-# Display results of code below this codeblock
-
+public_change <- public_enrollment |>
+filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12))|>
+filter(str_detect(grade, "k_12_total"))|>
+filter(sch_year == "2019-2020" | sch_year == "2021-2022")|>
+group_by(sch_year) |>
+summarise(total_enrollment = sum(public_enrollment))
 ```
 
 ### Sentence 4
