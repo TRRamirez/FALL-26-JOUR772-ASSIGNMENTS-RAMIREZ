@@ -1,0 +1,168 @@
+---
+title: "Reverse Engineering Project"
+author: "Student names here"
+date: "Date here"
+output:
+  html_document:
+    theme: cerulean
+    highlight: pygments
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this notebook, we are reverse engineering the story: <https://projects.apnews.com/features/2023/missing-children/index.html>
+
+## Load libraries
+
+Loading required libraries for this analysis.
+
+```{r echo=FALSE, message=FALSE}
+
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(janitor)
+
+```
+
+## Load and Cleaning Data
+
+In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data.
+
+```{r}
+
+#Load and clean datasets
+age_pop <- read_csv("data/population-by-age.csv") |>
+  clean_names()
+
+
+private_enrollment <- read.csv("data/private-enrollment-by-grade.csv") |>
+  clean_names() |>
+  #rename to join later
+  rename(state_abbr = "state") |>
+  rename(private_enrollment = "enrollment") |>
+  mutate(private_enrollment = as.numeric(private_enrollment)) |>
+  mutate(fips = as.numeric(fips))
+
+
+
+public_enrollment <- read_csv("data/public-enrollment-by-grade.csv") |>
+  clean_names() |>
+  #rename to join later
+  rename(state_abbr = "st") |>
+  rename(public_enrollment = "enrollment")
+
+#new combined dataset
+school_story <- public_enrollment |>
+  left_join(private_enrollment, join_by(fips, sch_year, grade, state_abbr)) |>
+  #filter to states analyzed by AP 
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12)) |>
+  select(-data_source)
+
+```
+
+## Sentences to Engineer
+
+In this notebook, we are reverse engineering five sentences from the story.
+
+### Sentence 1
+
+- **Sentence text**: "The population of school-aged kids in the states we studied fell by about 183,000 according to census estimates."
+- **Analysis summary**: Our results confirmed the AP's claim stating that the population of school-age kids in the 22 states studied fell by about 183,000. We found this number by finding the difference between the provided age and population data from from July 2020 to the age and population data we have from July 2021.
+
+```{r}
+age_2020_pop <- age_pop |>
+  mutate(year = year(est_date), month = month(est_date)) |>
+  filter(year == 2020 & month == 4) |>
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12)) |>
+  group_by(state) |>
+  summarise(total_pop_2020 = sum(population))
+
+
+age_2021_pop <- age_pop |>
+  mutate(year = year(est_date), month = month(est_date)) |>
+  filter(year == 2021 & month == 7) |>
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12)) |>
+  group_by(state) |>
+  summarise(total_pop_2021 = sum(population))
+
+
+combo_age_year <- age_2021_pop |>
+  left_join(age_2020_pop, join_by(state)) |>
+  mutate(difference = total_pop_2020 - total_pop_2021) |>
+  summarise(total_difference = sum(difference)) 
+
+```
+
+### Sentence 2
+
+- **Sentence text**: "Those states saw private-school enrollment grow by over 100,000 students."
+- **Analysis summary**: Our results confirmed the AP's claim that private school enrollment in the 22 states studies grew by over 100,000 students. The AP article also states that private school enrollment grew by "about 103,000 students." We found this number by comparing total private school enrollment in the 22 states studied between the 2019-2020 and the 2021-2022 school years. This gives us a difference of 102,847 which explains both sentences where this number is mentioned in the AP's story.
+
+```{r}
+private_enrollment_change <- private_enrollment |> 
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12)) |>
+  filter(str_detect(grade, "k_12_total")) |>
+  filter(sch_year == "2019-2020" | sch_year == "2021-2022") |>
+  group_by(sch_year) |>
+  summarize(total_enrollment = sum(public_enrollment)) 
+
+```
+
+### Sentence 3
+
+- **Sentence text**: "In the 21 states where data was available, enrollment fell by about 700,000 students between the 2019-2020 and 2021-2022 school years."
+- **Analysis summary**: To find this change, we first created a filter from the avilable public school enrollment data, searching for the total enrollment in K-12 schools. The filter separated enrollment in the 2019-2020 and 2021-2022 academic years. We were then able to subtract the total enrollment we previously calculated from the sum of our public school enrollment data and got 704,593, which is the number that the AP presented.
+
+```{r}
+public_change <- public_enrollment |>
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12)) |>
+  filter(str_detect(grade,"k_12_total")) |>
+  filter(sch_year == "2019-2020" | sch_year == "2021-2022") |>
+  group_by(sch_year) |>
+  summarise(total_enrollment = sum(public_enrollment))
+
+```
+
+### Sentence 4
+
+- **Sentence text**: [Paste in sentence to engineer here]
+- **Analysis summary**: Here, we are finding the 230,000 unaccounted for students that the AP described. We used the available enrollment changes data to find homeschool enrollment growing by over 180,000, which is mentioned in the AP article. Subtracting the enrollment changes from homeschool, private and public while also accounting for the drop in population left us with 234,213 which is the number of unaccounted students mentioned in the article.
+
+```{r}
+enrollment_changes  <- read_csv("data/enrollment-change.csv") |>
+  clean_names()
+
+homeschool_enrollment <- enrollment_changes |>
+  filter(fips %in% c(6,36,22,37,53,8,13,27,55,33,25,30,10,38,11,46,45,31,44,47,42,12)) |>
+  filter(enrollment_type == "Homeschool enrollment") |>
+  select(fips, state_abbrev, total_change) |>
+  summarise(total_enrollment = sum(total_change, na.rm = TRUE))
+
+#calculated difference is 184,047
+
+# ( -704,593 + 102,847 + 184,047) - -183,486 = -234,213
+
+```
+
+### Sentence 5
+
+- **Sentence text**: [Paste in sentence to engineer here]
+- **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
+
+```{r}
+# Put code to reverse engineer sentence here
+
+# Display results of code below this codeblock
+
+```
+
+-30-
