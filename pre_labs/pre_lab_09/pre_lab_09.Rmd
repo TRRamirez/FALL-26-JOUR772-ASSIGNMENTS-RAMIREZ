@@ -90,7 +90,7 @@ Some publication systems allow for the embedding of HTML into a post or a story.
 
 **Answer** <https://datawrapper.dwcdn.net/kIHqv/1/>
 
-### Task 8: Make a Choropleth Map 
+### Task 8: Make a Choropleth Map
 
 Let's create a choropleth map - one that shows variations between the percentage of votes received by Wes Moore across Maryland counties. We'll read that in from the data folder.
 

@@ -1,0 +1,126 @@
+---
+title: "lab_09.Rmd"
+author: "Derek Willis"
+date: "2025-01-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## You will need
+
+- A Datawrapper account
+- Data in CSV files in the `data` folder
+
+## Load libraries and establish settings
+
+**Task** Create a codeblock and load appropriate packages and settings for this lab.
+
+```{r}
+# load libraries here
+library(tidyverse)
+library(janitor)
+library(dplyr)
+```
+
+## Questions
+
+**Q1.** You want to explore the differences between the electoral performances of Dan Cox in 2022 and Larry Hogan in 2018. Except a map is probably not the best way to show that. Let's make a chart instead, and the type is up to you, but the goal is to clearly show the differences between the two.
+
+You MUST do the following things when answering this question:
+
+\* Load the md_gov_county.csv and md_gov_county_18.csv files from the data folder
+
+\* Join those dataframes, specifying the join column.
+
+\* Add columns to generate percentages for Cox and Hogan.
+
+\* Export that joined dataframe to a CSV file using `write_csv`.
+
+\* Using that exported CSV, make a chart with Datawrapper. What kind of chart is up to you, so experiment with a few kinds of charts to see what answers the question above in the clearest way. Your chart MUST:
+
+\* Have a title, description and source that tells readers about the data. The title and description should highlight the most newsworthy or important aspect.
+
+\* Easily readable labels and values
+
+\* Publish your chart
+
+\* Describe your thought process below - why you chose to make the chart you did - and add the URL of your chart.
+
+**A1:** <https://datawrapper.dwcdn.net/PwWJH/1/>
+
+I chose to make the arrow plot because I felt it did a good job of showing the difference between the two candidates. The backwards arrow visually demonstrates exactly what the data shows us, that Dan Cox performed significantly worse in 2022 than Larry Hogan did in 2022 across the state of Maryland. I also added the percent change labels so you can see the difference of the percentage of the vote received from each specific County.
+
+```{r}
+#load data
+md_county_18 <- read_csv("data/md_gov_county_18.csv")|>
+  clean_names()
+md_county_22 <- read_csv("data/md_gov_county.csv")|>
+  clean_names()
+
+#join datasets and mutate columns 
+joined_md_gov <- md_county_22 |>
+  left_join(md_county_18, by = "county")|>
+mutate(total_votes_22 = cox + moore + lashar + wallace + harding + sefcik + write_ins.x, cox_pct = (cox / total_votes_22) *100)|>
+  mutate(total_votes_18 = cox + moore + lashar + wallace + harding + sefcik + write_ins.x, hogan_pct = (hogan / total_votes_18) *100)
+
+#export as csv 
+write_csv(joined_md_gov,"data/joined_md_gov.csv")
+
+```
+
+**Q2.** You're interested in seeing how the methods of voting have changed in Maryland since 2018. Using the `md_votes_by_type.csv` that has data from the top of the ticket (governor in 2018 and 2022, president in 2020), make a chart showing the percentage of votes cast in each category - early voting, election day and mail - over the three years. You'll need to make those percentages in R and then export the CSV using `write_csv`, then make the chart in Datawrapper. Have a title, description and source that tells readers about the data. The title and description should highlight the most newsworthy or important aspect.
+
+HINT: In Datawrapper's "Check and Describe" tab, you can click on a column to get the option of "hiding" it in any visualization.
+
+What do you think the story here is? Put the answer below along with the URL of your chart.
+
+**A2:** <https://datawrapper.dwcdn.net/Edn9K/1/>
+
+I think the primary story here is that in-person voting as a whole decreased exponentially in 2020. This doesn't come as a shock given the COVID19 pandemic caused many more to vote via mail. However, since new methods of voting such as early voting and mail-in voting have become more common, the amount of Maryland voters who showed up to the polls on election day in 2022 was less than pre-pandemic in 2018. I think this data would likely be backed up by speaking with specific voters who decided to vote early or by mail in 2020, and then have continued to do so in the elections since as it is more convenient for them.
+
+```{r}
+#load data 
+md_votes_type <- read_csv("data/md_votes_by_type.csv")|>
+  clean_names()
+
+#mutate data 
+md_votetype_pct <- md_votes_type|>
+  mutate(other = total - (early + election_day + mail), pct_early = (early/total)*100, pct_election_day = (election_day/total)*100, pct_mail = (mail/total)*100, pct_other = (other/total)*100) 
+
+write_csv(md_votetype_pct, "data/md_votetype_pct.csv")
+  
+```
+
+**Q3.** You want to know more about the geography of 911 overdose calls in Montgomery County, Maryland, in 2022. To do that, you'll make a choropleth map in Datawrapper. You will need to:
+
+- Read the file into R and create columns for the number of calls in each zip code and the percentage of all calls that number represents and then export that CSV to use in your map.
+- Search for Maryland zip codes (use the 2020 zip codes) as the base map.
+- Upload the CSV file.
+- Change the tooltip to show both the number and the percentage (you can put them side by side or put one under the other). Make sure to properly format both numbers to make them readable.
+- Add labels to your map that locate prominent places in the county.
+- Have a title, description and source that tells readers about the data. The title and description should highlight the most newsworthy or important aspect.
+- Make any other changes to data that helps you make a more accurate map.
+
+What do you think the story here is, and what would you want to know more about? Put the answer below along with the URL of your map.
+
+**A3:** <https://datawrapper.dwcdn.net/Edn9K/1/>
+
+I think the story here is clearly to focus on Germantown, MD. the most overdose 911 calls across the county are sent from that zipcode and there are likely other datasets that we could cross-reference with this information to help us understand why that may be, or identify a correlation.
+
+```{r}
+#load data
+moco_overdoses_22 <- read_csv("data/montgomery_2022_overdoses.csv")|>
+  clean_names()
+
+moco_callsby_zipcode <- moco_overdoses_22|>
+  mutate(zip = as.character(zip))|>
+   group_by(zip)|> 
+  summarise(total_calls = n())|>
+  mutate(pct_of_calls = (total_calls/sum(total_calls))*100)|>
+  arrange(desc(pct_of_calls))
+
+write_csv(moco_callsby_zipcode, "data/moco_callsby_zipcode.csv")
+```
